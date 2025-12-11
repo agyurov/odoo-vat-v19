@@ -9,10 +9,15 @@ from tkinter import filedialog, messagebox
 from .schemas import load_deklar_mapping
 from .cli import run as run_pipeline
 from .templates_guard import ensure_templates_ready
+from .config import load_user_settings, save_user_settings
 
 
+APP_VERSION = "0.1.0"
 
-def _build_ui_window(deklar_mapping: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def _build_ui_window(
+    deklar_mapping: Dict[str, Any],
+    defaults: Dict[str, str],
+) -> Optional[Dict[str, Any]]:
     """
     Build and display the Tkinter window.
 
@@ -22,7 +27,8 @@ def _build_ui_window(deklar_mapping: Dict[str, Any]) -> Optional[Dict[str, Any]]
     or None if the user cancels/closes without running.
     """
     root = tk.Tk()
-    root.title("VAT Journal Export")
+    root.title(f"VAT Journal Export (v{APP_VERSION})")
+
 
     params: Dict[str, Any] = {
         "journal_path": None,
@@ -53,8 +59,8 @@ def _build_ui_window(deklar_mapping: Dict[str, Any]) -> Optional[Dict[str, Any]]
 
     # --- submitter + EGN ---
 
-    submitter_var = tk.StringVar(value="Емилия Гюрова")
-    egn_var = tk.StringVar(value="6111146394")
+    submitter_var = tk.StringVar(value="submitter_person")
+    egn_var = tk.StringVar(value="egn")
 
     tk.Label(root, text="Submitter (Подател):").grid(row=row, column=0, sticky="w", padx=5, pady=(10, 0))
     tk.Entry(root, textvariable=submitter_var, width=40).grid(row=row, column=1, sticky="w", padx=5, pady=(10, 0))
@@ -135,11 +141,14 @@ def main() -> None:
     """
     # Ensure templates exist and are valid (or restored from defaults)
     ensure_templates_ready()
-    
+
+    # Load last-used user settings (submitter + EGN)
+    user_defaults = load_user_settings()
+
     # Load DEKLAR mapping to know which pop-up fields to show
     deklar_mapping = load_deklar_mapping()
 
-    result = _build_ui_window(deklar_mapping)
+    result = _build_ui_window(deklar_mapping, user_defaults)
     if result is None:
         print("Operation cancelled by user.")
         return
@@ -147,8 +156,17 @@ def main() -> None:
     journal_path: Path = result["journal_path"]
     ui_overrides: Dict[str, Any] = result["ui_overrides"]
 
+    # Persist submitter + EGN for next time
+    save_user_settings(
+        {
+            "submitter_person": ui_overrides.get("submitter_person", ""),
+            "egn": ui_overrides.get("egn", ""),
+        }
+    )
+
     # Delegate actual work to the core pipeline
     run_pipeline(journal_path, ui_overrides=ui_overrides)
+
 
 
 if __name__ == "__main__":
