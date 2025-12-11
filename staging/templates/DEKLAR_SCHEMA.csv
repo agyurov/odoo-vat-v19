@@ -1,0 +1,37 @@
+﻿deklar_column_name,example value,PDF_position,file_ref,ref_column_name
+vat_number,BG121666330,,input/deduce,
+taxpayer_name,FAC Doema LTD,,input/deduce,
+tax_period,202511,,input/deduce,
+submitter_person,Боян Марианов Гюров,,input/deduce,
+sales_document_count,32,,input/deduce,
+purchases_document_count,7,,input/deduce,
+sales_total_tax_base,27937.02,10,prodagbi,total_tax_base
+sales_total_vat,5587.4,20,prodagbi,total_vat
+sales_base_20,27937.02,11,prodagbi,base_20
+sales_vat_20,5587.4,21,prodagbi,vat_20
+sales_base_intra_community_and_82,0,12,prodagbi,base_intra_community_acq
+sales_vat_intra_community_and_82,0,22,prodagbi,base_reverse_charge_82
+sales_vat_private_use,0,23,prodagbi,vat_intra_community_and_82
+sales_base_9,0,13,prodagbi,vat_for_private_use
+sales_vat_9,0,24,prodagbi,base_9
+sales_base_0_chapter3,0,14,prodagbi,base_0_chapter3
+sales_base_0_intra_community_supply,0,15,prodagbi,base_0_intra_community_supply
+sales_base_0_other,0,16,prodagbi,base_0_other
+sales_base_services_21_2,0,17,prodagbi,base_services_21_2
+sales_base_69_2_eu,0,18,prodagbi,base_69_2_eu
+sales_base_exempt,0,19,prodagbi,base_exempt
+purchases_base_and_vat_no_credit,3192.39,30,pokupki,base_and_vat_no_credit
+purchases_base_full_credit,638.47,31,pokupki,base_full_credit
+purchases_vat_full_credit,0,41,pokupki,vat_full_credit
+purchases_base_partial_credit,0,32,pokupki,base_partial_credit
+purchases_vat_partial_credit,0,42,pokupki,vat_partial_credit
+purchases_annual_correction,0,43,pokupki,annual_correction
+pro_rata_coefficient,0,33,pop-up,default 0
+total_tax_credit,0,40,self ref,cell.41+cell.42*cell.33+cell.43)
+vat_due,5587.4,50,self ref,(cell.20-cell.40)>0
+vat_refundable,0,60,self ref,cell.20-cell.40)<0
+vat_offset_92_1,0,70,pop-up,default 0
+vat_paid,0,71,pop-up,default 0
+vat_refundable_92_1,0,80,pop-up,default 0
+vat_refundable_92_3,0,81,pop-up,default 0
+vat_refundable_92_4,0,82,pop-up,default 0
