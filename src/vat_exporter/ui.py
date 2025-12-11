@@ -8,6 +8,8 @@ from tkinter import filedialog, messagebox
 
 from .schemas import load_deklar_mapping
 from .cli import run as run_pipeline
+from .templates_guard import ensure_templates_ready
+
 
 
 def _build_ui_window(deklar_mapping: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -131,6 +133,9 @@ def main() -> None:
     Usage:
         python -m src.vat_exporter.ui
     """
+    # Ensure templates exist and are valid (or restored from defaults)
+    ensure_templates_ready()
+    
     # Load DEKLAR mapping to know which pop-up fields to show
     deklar_mapping = load_deklar_mapping()
 
