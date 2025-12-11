@@ -3,11 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Dict, Any
+from .paths import get_app_root
 
 
 # We assume the project root has a "templates" folder.
 # This works whether you run from the repo root or install the package.
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = get_app_root()
 TEMPLATES_DIR = PROJECT_ROOT / "templates"
 
 

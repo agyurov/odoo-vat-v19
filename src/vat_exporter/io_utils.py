@@ -3,11 +3,12 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from typing import Dict, Any
+from .paths import get_app_root
 
 import pandas as pd
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = get_app_root()
 
 
 def create_output_folder(company: Dict[str, Any], accounting_period: str) -> Path:
