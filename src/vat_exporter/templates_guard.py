@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Dict, Any
 import json
@@ -28,8 +29,13 @@ def _get_templates_dir() -> Path:
 
 def _get_default_templates_dir() -> Path:
     """Return the internal default templates directory (packaged)."""
-    # These live inside the package under src/vat_exporter/default_templates
+    # Frozen (PyInstaller) → defaults are under <app_root>/vat_exporter/default_templates
+    if getattr(sys, "frozen", False):
+        return get_app_root() / "vat_exporter" / "default_templates"
+
+    # Dev / source mode → defaults are alongside this file in src/vat_exporter/default_templates
     return Path(__file__).resolve().parent / "default_templates"
+
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
