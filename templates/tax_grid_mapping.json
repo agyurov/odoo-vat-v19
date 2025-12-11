@@ -1,0 +1,124 @@
+{
+  "tax_grid_mapping": [
+    {
+      "tax_grid": "+21",
+      "prodagbi_columns": [
+        12,
+        14
+      ],
+      "pokupki_columns": []
+    },
+    {
+      "tax_grid": "+11",
+      "prodagbi_columns": [
+        11,
+        13
+      ],
+      "pokupki_columns": []
+    },
+    {
+      "tax_grid": "+12_1",
+      "prodagbi_columns": [
+        11
+      ],
+      "pokupki_columns": []
+    },
+    {
+      "tax_grid": "+18",
+      "prodagbi_columns": [
+        11,
+        25
+      ],
+      "pokupki_columns": []
+    },
+    {
+      "tax_grid": "+22",
+      "prodagbi_columns": [
+        12,
+        17
+      ],
+      "pokupki_columns": []
+    },
+    {
+      "tax_grid": "+30",
+      "prodagbi_columns": [],
+      "pokupki_columns": [
+        10
+      ]
+    },
+    {
+      "tax_grid": "+31",
+      "prodagbi_columns": [],
+      "pokupki_columns": [
+        11
+      ]
+    },
+    {
+      "tax_grid": "+41",
+      "prodagbi_columns": [],
+      "pokupki_columns": [
+        12
+      ]
+    },
+    {
+      "tax_grid": "-21",
+      "prodagbi_columns": [
+        12,
+        14
+      ],
+      "pokupki_columns": []
+    },
+    {
+      "tax_grid": "-11",
+      "prodagbi_columns": [
+        11,
+        13
+      ],
+      "pokupki_columns": []
+    },
+    {
+      "tax_grid": "-12_1",
+      "prodagbi_columns": [
+        11
+      ],
+      "pokupki_columns": []
+    },
+    {
+      "tax_grid": "-18",
+      "prodagbi_columns": [
+        11,
+        25
+      ],
+      "pokupki_columns": []
+    },
+    {
+      "tax_grid": "-22",
+      "prodagbi_columns": [
+        12,
+        16
+      ],
+      "pokupki_columns": []
+    },
+    {
+      "tax_grid": "-30",
+      "prodagbi_columns": [],
+      "pokupki_columns": [
+        10
+      ]
+    },
+    {
+      "tax_grid": "-31",
+      "prodagbi_columns": [],
+      "pokupki_columns": [
+        11
+      ]
+    },
+    {
+      "tax_grid": "-41",
+      "prodagbi_columns": [],
+      "pokupki_columns": [
+        12
+      ]
+    }
+  ]
+}
