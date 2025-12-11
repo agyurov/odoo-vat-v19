@@ -59,8 +59,8 @@ def _build_ui_window(
 
     # --- submitter + EGN ---
 
-    submitter_var = tk.StringVar(value="submitter_person")
-    egn_var = tk.StringVar(value="egn")
+    submitter_var = tk.StringVar(value=defaults.get("submitter_person", ""))
+    egn_var = tk.StringVar(value=defaults.get("egn", ""))
 
     tk.Label(root, text="Submitter (Подател):").grid(row=row, column=0, sticky="w", padx=5, pady=(10, 0))
     tk.Entry(root, textvariable=submitter_var, width=40).grid(row=row, column=1, sticky="w", padx=5, pady=(10, 0))
