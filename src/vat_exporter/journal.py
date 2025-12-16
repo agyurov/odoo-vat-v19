@@ -16,14 +16,14 @@ def select_company(journal_df: pd.DataFrame) -> Dict[str, Any]:
 
     Assumes all rows belong to the same company.
     """
-    required_cols = ["Company", "company_id/vat"]
+    required_cols = ["company_id", "company_id/vat"]
     missing = [c for c in required_cols if c not in journal_df.columns]
     if missing:
         raise ValueError(f"Missing required columns in journal for company info: {missing}")
 
     # Get unique non-empty values
     company_names = (
-        journal_df["Company"]
+        journal_df["company_id"]
         .dropna()
         .astype(str)
         .str.strip()
