@@ -113,31 +113,31 @@ def select_company(journal_df):
     Extract company info from the journal CSV.
 
     Expects columns:
-      - 'Company'          -> company name
-      - 'Company/Tax ID'   -> VAT number
+      - 'company_id'          -> company name
+      - 'company_id/vat'   -> VAT number
 
     Assumes all rows belong to the same company.
     """
-    required_cols = ['Company', 'Company/Tax ID']
+    required_cols = ['company_id', 'company_id/vat']
     missing = [c for c in required_cols if c not in journal_df.columns]
     if missing:
         raise ValueError(f"Missing required columns in journal for company info: {missing}")
 
     # Get unique non-empty values
-    company_names = journal_df['Company'].dropna().astype(str).str.strip().unique()
-    tax_ids = journal_df['Company/Tax ID'].dropna().astype(str).str.strip().unique()
+    company_names = journal_df['company_id'].dropna().astype(str).str.strip().unique()
+    tax_ids = journal_df['company_id/vat'].dropna().astype(str).str.strip().unique()
 
     if len(company_names) == 0 or len(tax_ids) == 0:
         raise ValueError(
-            "Could not find non-empty values for 'Company' and 'Company/Tax ID' in journal."
+            "Could not find non-empty values for 'company_id' and 'company_id/vat' in journal."
         )
 
     if len(company_names) > 1:
         print("WARNING: Multiple different Company names found in journal. Using the first one.")
         print("  Unique Company values:", list(company_names))
     if len(tax_ids) > 1:
-        print("WARNING: Multiple different Company/Tax ID values found in journal. Using the first one.")
-        print("  Unique Company/Tax ID values:", list(tax_ids))
+        print("WARNING: Multiple different company_id/vat values found in journal. Using the first one.")
+        print("  Unique company_id/vat values:", list(tax_ids))
 
     company_name = company_names[0]
     tax_id = tax_ids[0]
