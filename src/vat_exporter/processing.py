@@ -167,7 +167,6 @@ def process_journal(
             tax_tags = [tag.strip() for tag in clean_tags_str.split(",") if tag.strip()]
 
             # Get amount based on journal type
-            jtype = row["journal_id/type"]
             jtype = row["journal_id/.id"]
 
             if jtype == "10":
