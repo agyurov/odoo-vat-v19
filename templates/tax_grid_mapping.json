@@ -50,14 +50,14 @@
       "tax_grid": "+31",
       "prodagbi_columns": [],
       "pokupki_columns": [
-        11
+        12
       ]
     },
     {
       "tax_grid": "+41",
       "prodagbi_columns": [],
       "pokupki_columns": [
-        12
+        13
       ]
     },
     {
@@ -110,14 +110,14 @@
       "tax_grid": "-31",
       "prodagbi_columns": [],
       "pokupki_columns": [
-        11
+        12
       ]
     },
     {
       "tax_grid": "-41",
       "prodagbi_columns": [],
       "pokupki_columns": [
-        12
+        13
       ]
     }
   ]
