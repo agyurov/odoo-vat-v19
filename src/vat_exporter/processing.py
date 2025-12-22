@@ -65,7 +65,7 @@ def create_output_row(
         else:
             # Fallback if something unexpected happens
             try:
-                dt = pd.to_datetime(journal_row["date"], dayfirst=True, format="%d/%m/%Y")
+                dt = pd.to_datetime(journal_row["date"], dayfirst=True, format="%Y-%m-%d")
                 row_data["tax_period"] = dt.strftime("%Y%m")
                 row_data["document_date"] = dt.strftime("%d/%m/%Y")
             except Exception:
