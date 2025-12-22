@@ -86,7 +86,7 @@ def get_accounting_period(journal_df: pd.DataFrame) -> str:
         journal_df["date_dt"] = pd.to_datetime(
             journal_df["date"],
             dayfirst=True,
-            format="%d/%m/%Y",
+            format="%Y-%m-%d",
         )
         max_date = journal_df["date_dt"].max()
         accounting_period = max_date.strftime("%Y%m")  # YYYYMM format
