@@ -12,7 +12,7 @@ from .templates_guard import ensure_templates_ready
 from .config import load_user_settings, save_user_settings
 
 
-APP_VERSION = "0.1.3"
+APP_VERSION = "0.1.5"
 
 def _build_ui_window(
     deklar_mapping: Dict[str, Any],
