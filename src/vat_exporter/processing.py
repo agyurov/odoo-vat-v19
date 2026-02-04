@@ -169,7 +169,7 @@ def process_journal(
             # Get amount based on journal type
             jtype = row["journal_id/.id"]
 
-            amount = row["debit"] - row["credit"]
+            amount = row["amount_currency"]
 
             # if jtype == 10:
             #     amount = row["debit"] if row["debit"] > 0 else -row["credit"]
