@@ -40,6 +40,11 @@ def load_tax_grid_mapping() -> Dict[str, Any]:
     return _load_json(TEMPLATES_DIR / "tax_grid_mapping.json")
 
 
+def load_ledger_columns() -> Dict[str, Any]:
+    """Load canonical ledger field -> CSV column mapping for Odoo v19 exports."""
+    return _load_json(TEMPLATES_DIR / "ledger-columns.json")
+
+
 def load_deklar_mapping() -> Dict[str, Any]:
     """Load DEKLAR logical mapping (how columns are filled/aggregated)."""
     return _load_json(TEMPLATES_DIR / "deklar_mapping.json")
@@ -53,6 +58,7 @@ def load_all_schemas_and_mappings() -> Dict[str, Dict[str, Any]]:
       - 'pokupki_schema'
       - 'deklar_schema'
       - 'tax_grid_mapping'
+      - 'ledger_columns'
       - 'deklar_mapping'
     """
     return {
@@ -60,5 +66,6 @@ def load_all_schemas_and_mappings() -> Dict[str, Dict[str, Any]]:
         "pokupki_schema": load_pokupki_schema(),
         "deklar_schema": load_deklar_schema(),
         "tax_grid_mapping": load_tax_grid_mapping(),
+        "ledger_columns": load_ledger_columns(),
         "deklar_mapping": load_deklar_mapping(),
     }

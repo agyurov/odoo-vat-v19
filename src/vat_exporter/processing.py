@@ -47,14 +47,14 @@ def create_output_row(
             row_data[field_name] = None  # Other fields default to None
 
     # Map specific fields from journal row
-    if "partner_id/vat" in journal_row:
+    if "partner_vat" in journal_row:
         row_data["vat_number"] = company["vat"]
         row_data["counterparty_vat"] = (
-            journal_row["partner_id/vat"]
-            if pd.notna(journal_row["partner_id/vat"]) and journal_row["partner_id/vat"] != ""
+            journal_row["partner_vat"]
+            if pd.notna(journal_row["partner_vat"]) and journal_row["partner_vat"] != ""
             else "999999999"
         )
-        row_data["counterparty_name"] = journal_row.get("partner_id", "")
+        row_data["counterparty_name"] = journal_row.get("partner_name", "")
 
     if "date" in journal_row:
         # Prefer parsed date_dt if available
@@ -80,8 +80,8 @@ def create_output_row(
     row_data["journal_row_number"] = str(row_number)
 
     # Format document_type from move_id/l10n_bg_document_type with leading zero if needed
-    if "move_id/l10n_bg_document_type" in journal_row:
-        row_data["document_type"] = str(journal_row["move_id/l10n_bg_document_type"]).zfill(2)
+    if "document_type" in journal_row:
+        row_data["document_type"] = str(journal_row["document_type"]).zfill(2)
     else:
         row_data["document_type"] = "!!"  # Fallback
 
@@ -133,21 +133,26 @@ def process_journal(
     journal_df = create_agg_col(journal_df)
 
     # Set default VAT for empty partner_id/vat before grouping
-    if "partner_id/vat" in journal_df.columns:
-        journal_df["partner_id/vat"] = journal_df["partner_id/vat"].fillna("999999999")
-        journal_df["partner_id/vat"] = journal_df["partner_id/vat"].replace("", "999999999")
+    if "partner_vat" in journal_df.columns:
+        journal_df["partner_vat"] = journal_df["partner_vat"].fillna("999999999")
+        journal_df["partner_vat"] = journal_df["partner_vat"].replace("", "999999999")
     else:
-        raise ValueError("Journal data must contain 'partner_id/vat' column")
+        raise ValueError("Journal data must contain 'partner_vat' column")
 
     print(f"Total journal rows: {len(journal_df)}")
 
     # Group by document (using agg_col, partner_id/vat, and date as document identifier)
-    document_groups = journal_df.groupby(["agg_col", "partner_id/vat", "date"])
+    document_groups = journal_df.groupby(["agg_col", "partner_vat", "date"])
     print(f"Found {len(document_groups)} document groups")
 
     # Counters for sequential row numbers
     prodagbi_row_counter = 1
     pokupki_row_counter = 1
+
+    tax_mapping_by_tag = {
+        item["tax_grid"]: item for item in tax_mapping.get("tax_grid_mapping", [])
+    }
+    unmapped_tags: set[str] = set()
 
     # Process each document group
     for (doc_ref, counterparty_vat, doc_date), group_df in document_groups:
@@ -160,32 +165,22 @@ def process_journal(
 
         # Process each journal entry in this document
         for idx, row in group_df.iterrows():
-            tax_tags_str = str(row["tax_tag_ids"])
+            if pd.isna(row["tax_tag_ids"]):
+                tax_tags = []
+            else:
+                tax_tags = [tag.strip() for tag in str(row["tax_tag_ids"]).split(",") if tag.strip()]
 
-            # Better parsing for multiple tags - remove quotes first, then split
-            clean_tags_str = tax_tags_str.replace("'", "").replace('"', "")
-            tax_tags = [tag.strip() for tag in clean_tags_str.split(",") if tag.strip()]
-
-            # Get amount based on journal type
-            jtype = row["journal_id/.id"]
-
-            amount = row["amount_currency"]
-
-            # if jtype == 10:
-            #     amount = row["debit"] if row["debit"] > 0 else -row["credit"]
-            # elif jtype == 9:
-            #     amount = -row["debit"] if row["debit"] > 0 else row["credit"]
-            # else:
-            #     amount = row["debit"] - row["credit"]
+            # Odoo v19 export provides signed amount in 'balance'.
+            amount = pd.to_numeric(row["balance"], errors="coerce")
+            if pd.isna(amount):
+                continue
 
             # Process all tax tags for this journal entry
             for tag in tax_tags:
-                mapping = next(
-                    (m for m in tax_mapping["tax_grid_mapping"] if m["tax_grid"] == tag),
-                    None,
-                )
+                mapping = tax_mapping_by_tag.get(tag)
 
                 if not mapping:
+                    unmapped_tags.add(tag)
                     continue
 
                 # Add to PRODAGBI if mapped
@@ -233,5 +228,11 @@ def process_journal(
                 pokupki_df = pd.concat([pokupki_df, pd.DataFrame([pokupki_new_row])], ignore_index=True)
 
             pokupki_row_counter += 1
+
+    if unmapped_tags:
+        print(
+            "WARNING: Unmapped tax tags found in journal: "
+            + ", ".join(sorted(unmapped_tags))
+        )
 
     return prodagbi_df, pokupki_df
