@@ -14,6 +14,7 @@ from .paths import get_app_root
 
 
 REQUIRED_TEMPLATES = [
+    "ledger-columns.json",
     "prodagbi_schema.json",
     "pokupki_schema.json",
     "deklar_schema.json",

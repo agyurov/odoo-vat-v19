@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 import pandas as pd
 
 from .schemas import load_all_schemas_and_mappings
-from .journal import select_company, get_accounting_period
+from .journal import select_company, get_accounting_period, normalize_journal_columns
 from .processing import process_journal
 from .deklar import generate_deklar
 from .io_utils import create_output_folder, df_to_fixed_width_txt
@@ -40,20 +40,24 @@ def run(
     # --- Load journal CSV ---
     journal_df = pd.read_csv(journal_csv_path, encoding="utf-8")
 
-    # --- Extract company from journal ---
-    company = select_company(journal_df)
-
-    # --- Extract accounting period (YYYYMM) ---
-    accounting_period = get_accounting_period(journal_df)
-    print(f"Accounting period inferred from journal: {accounting_period}")
-
     # --- Load all schemas and mappings ---
     schemas = load_all_schemas_and_mappings()
     prodagbi_schema = schemas["prodagbi_schema"]
     pokupki_schema = schemas["pokupki_schema"]
     deklar_schema = schemas["deklar_schema"]
     tax_grid_mapping = schemas["tax_grid_mapping"]
+    ledger_columns = schemas["ledger_columns"]
     deklar_mapping = schemas["deklar_mapping"]
+
+    # --- Normalize journal CSV columns for Odoo v19 ---
+    journal_df = normalize_journal_columns(journal_df, ledger_columns)
+
+    # --- Extract company from journal ---
+    company = select_company(journal_df)
+
+    # --- Extract accounting period (YYYYMM) ---
+    accounting_period = get_accounting_period(journal_df)
+    print(f"Accounting period inferred from journal: {accounting_period}")
 
     # Tag schema names (used by create_output_row for descriptions)
     prodagbi_schema["schema_name"] = "prodagbi_schema"

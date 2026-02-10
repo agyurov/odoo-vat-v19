@@ -1,0 +1,15 @@
+{
+  "name": "ledger-columns",
+  "description": "Canonical internal ledger field names mapped to exact Odoo v19 CSV column names.",
+  "company_name": "company_id",
+  "company_vat": "company_id/vat",
+  "partner_name": "partner_id",
+  "partner_vat": "partner_id/vat",
+  "tax_tag_ids": "tax_tag_ids",
+  "balance": "balance",
+  "date": "date",
+  "journal_type": "journal_id/type",
+  "purchase_ref": "ref",
+  "sales_move_name": "move_name",
+  "document_type": "move_id/l10n_bg_document_type"
+}

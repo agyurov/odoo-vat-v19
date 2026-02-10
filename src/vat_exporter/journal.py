@@ -6,31 +6,86 @@ import re
 import pandas as pd
 
 
+REQUIRED_LEDGER_COLUMN_KEYS = [
+    "company_name",
+    "company_vat",
+    "partner_name",
+    "partner_vat",
+    "tax_tag_ids",
+    "balance",
+    "date",
+    "journal_type",
+    "purchase_ref",
+    "sales_move_name",
+    "document_type",
+]
+
+
+def normalize_journal_columns(
+    journal_df: pd.DataFrame,
+    ledger_columns: Dict[str, Any],
+) -> pd.DataFrame:
+    """
+    Normalize Odoo v19 export columns to canonical internal names.
+
+    This function also removes export artifacts (Unnamed:* columns) and validates
+    that all required mappings and source columns are present.
+    """
+    unnamed_cols = [c for c in journal_df.columns if str(c).startswith("Unnamed:")]
+    if unnamed_cols:
+        journal_df = journal_df.drop(columns=unnamed_cols)
+
+    missing_mapping_keys = [k for k in REQUIRED_LEDGER_COLUMN_KEYS if k not in ledger_columns]
+    if missing_mapping_keys:
+        raise ValueError(
+            "Missing required keys in ledger-columns.json: "
+            + ", ".join(missing_mapping_keys)
+        )
+
+    rename_map: Dict[str, str] = {}
+    missing_source_columns = []
+
+    for canonical_key in REQUIRED_LEDGER_COLUMN_KEYS:
+        source_col = ledger_columns[canonical_key]
+        if source_col not in journal_df.columns:
+            missing_source_columns.append(f"{canonical_key} -> {source_col}")
+            continue
+        rename_map[source_col] = canonical_key
+
+    if missing_source_columns:
+        raise ValueError(
+            "Journal CSV is missing required columns from ledger-columns.json: "
+            + "; ".join(missing_source_columns)
+        )
+
+    return journal_df.rename(columns=rename_map)
+
+
 def select_company(journal_df: pd.DataFrame) -> Dict[str, Any]:
     """
     Extract company info from the journal CSV.
 
-    Expects columns:
-      - 'company_id'          -> company name
-      - 'company_id/vat'   -> VAT number
+    Expects canonical columns:
+      - 'company_name'   -> company name
+      - 'company_vat'    -> VAT number
 
     Assumes all rows belong to the same company.
     """
-    required_cols = ["company_id", "company_id/vat"]
+    required_cols = ["company_name", "company_vat"]
     missing = [c for c in required_cols if c not in journal_df.columns]
     if missing:
         raise ValueError(f"Missing required columns in journal for company info: {missing}")
 
     # Get unique non-empty values
     company_names = (
-        journal_df["company_id"]
+        journal_df["company_name"]
         .dropna()
         .astype(str)
         .str.strip()
         .unique()
     )
     tax_ids = (
-        journal_df["company_id/vat"]
+        journal_df["company_vat"]
         .dropna()
         .astype(str)
         .str.strip()
@@ -39,15 +94,15 @@ def select_company(journal_df: pd.DataFrame) -> Dict[str, Any]:
 
     if len(company_names) == 0 or len(tax_ids) == 0:
         raise ValueError(
-            "Could not find non-empty values for 'company_id' and 'company_id/vat' in journal."
+            "Could not find non-empty values for 'company_name' and 'company_vat' in journal."
         )
 
     if len(company_names) > 1:
         print("WARNING: Multiple different Company names found in journal. Using the first one.")
         print("  Unique Company values:", list(company_names))
     if len(tax_ids) > 1:
-        print("WARNING: Multiple different company_id/vat values found in journal. Using the first one.")
-        print("  Unique company_id/vat values:", list(tax_ids))
+        print("WARNING: Multiple different company_vat values found in journal. Using the first one.")
+        print("  Unique company_vat values:", list(tax_ids))
 
     company_name = company_names[0]
     tax_id = tax_ids[0]
@@ -108,7 +163,7 @@ def create_agg_col(journal_df: pd.DataFrame) -> pd.DataFrame:
           * if shorter: left-pad with zeros
       - prints some basic stats
     """
-    required_cols = ["journal_id/type", "ref", "move_name"]
+    required_cols = ["journal_type", "purchase_ref", "sales_move_name"]
     missing_cols = [col for col in required_cols if col not in journal_df.columns]
     if missing_cols:
         raise ValueError(f"Missing required columns for agg_col: {missing_cols}")
@@ -116,11 +171,11 @@ def create_agg_col(journal_df: pd.DataFrame) -> pd.DataFrame:
     df = journal_df.copy()
 
     def _agg_source(row: pd.Series) -> str:
-        jtype = row["journal_id/type"]
+        jtype = row["journal_type"]
         if jtype == "Purchase":
-            return row["ref"]
+            return row["purchase_ref"]
         elif jtype == "Sales":
-            return row["move_name"]
+            return row["sales_move_name"]
         else:
             # cleaned up from the old 'what the fuck' string
             return "UNKNOWN"
@@ -141,8 +196,8 @@ def create_agg_col(journal_df: pd.DataFrame) -> pd.DataFrame:
     df["agg_col"] = df["agg_col"].apply(format_agg_col)
 
     # Log some stats
-    purchase_count = (df["journal_id/type"] == "Purchase").sum()
-    sales_count = (df["journal_id/type"] == "Sales").sum()
+    purchase_count = (df["journal_type"] == "Purchase").sum()
+    sales_count = (df["journal_type"] == "Sales").sum()
     other_count = len(df) - purchase_count - sales_count
 
     print("agg_col creation stats:")
