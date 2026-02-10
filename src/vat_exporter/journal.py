@@ -136,18 +136,63 @@ def get_accounting_period(journal_df: pd.DataFrame) -> str:
     if "date" not in journal_df.columns:
         raise ValueError("Journal data must contain 'date' column")
 
-    # Convert dates to datetime and find the maximum date
-    try:
-        journal_df["date_dt"] = pd.to_datetime(
-            journal_df["date"],
-            dayfirst=True,
+    date_values = journal_df["date"].astype("string").str.strip()
+    non_empty_mask = date_values.notna() & (date_values != "")
+
+    if not non_empty_mask.any():
+        raise ValueError("Journal 'date' column has no non-empty values")
+
+    non_empty_values = date_values[non_empty_mask]
+    iso_mask = non_empty_values.str.fullmatch(r"\d{4}-\d{2}-\d{2}")
+    eu_mask = non_empty_values.str.fullmatch(r"\d{2}/\d{2}/\d{4}")
+
+    assumed_format = "mixed (YYYY-MM-DD and/or DD/MM/YYYY)"
+    parsed_dates = pd.Series(pd.NaT, index=journal_df.index, dtype="datetime64[ns]")
+
+    if iso_mask.all():
+        assumed_format = "ISO (%Y-%m-%d)"
+        parsed_dates.loc[non_empty_values.index] = pd.to_datetime(
+            non_empty_values,
             format="%Y-%m-%d",
+            errors="coerce",
         )
-        max_date = journal_df["date_dt"].max()
-        accounting_period = max_date.strftime("%Y%m")  # YYYYMM format
-        return accounting_period
-    except Exception as e:
-        raise ValueError(f"Error parsing dates from 'date' column: {e}")
+    elif eu_mask.all():
+        assumed_format = "EU (%d/%m/%Y)"
+        parsed_dates.loc[non_empty_values.index] = pd.to_datetime(
+            non_empty_values,
+            format="%d/%m/%Y",
+            errors="coerce",
+        )
+    else:
+        iso_indices = non_empty_values.index[iso_mask]
+        eu_indices = non_empty_values.index[eu_mask]
+
+        if len(iso_indices) > 0:
+            parsed_dates.loc[iso_indices] = pd.to_datetime(
+                non_empty_values.loc[iso_indices],
+                format="%Y-%m-%d",
+                errors="coerce",
+            )
+        if len(eu_indices) > 0:
+            parsed_dates.loc[eu_indices] = pd.to_datetime(
+                non_empty_values.loc[eu_indices],
+                format="%d/%m/%Y",
+                errors="coerce",
+            )
+
+    invalid_mask = non_empty_mask & parsed_dates.isna()
+    if invalid_mask.any():
+        bad_values = date_values[invalid_mask].head(3).tolist()
+        raise ValueError(
+            "Error parsing dates from 'date' column. "
+            f"Assumed format: {assumed_format}. "
+            f"First invalid values: {bad_values}"
+        )
+
+    journal_df["date_dt"] = parsed_dates
+    max_date = journal_df["date_dt"].max()
+    accounting_period = max_date.strftime("%Y%m")  # YYYYMM format
+    return accounting_period
 
 
 def create_agg_col(journal_df: pd.DataFrame) -> pd.DataFrame:
